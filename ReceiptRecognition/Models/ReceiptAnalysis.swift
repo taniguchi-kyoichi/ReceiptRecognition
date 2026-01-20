@@ -75,6 +75,9 @@ struct AnalysisResult {
     /// OCRテキスト（OCR方式の場合のみ）
     let ocrText: String?
 
+    /// 矩形が検出されたか（OCR方式の場合のみ）
+    let rectangleDetected: Bool?
+
     /// 合計トークン数
     var totalTokens: Int {
         inputTokens + outputTokens

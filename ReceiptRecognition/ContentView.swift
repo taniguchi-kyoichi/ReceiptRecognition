@@ -293,6 +293,13 @@ struct ContentView: View {
                 .foregroundStyle(.white)
                 .clipShape(Capsule())
 
+            // 矩形未検出の場合は理由を表示
+            if let rectangleDetected = result.rectangleDetected, !rectangleDetected {
+                Text("矩形未検出")
+                    .font(.caption2)
+                    .foregroundStyle(colors.error)
+            }
+
             if showOCRButton {
                 Button {
                     showOCRTextSheet = true
@@ -301,6 +308,7 @@ struct ContentView: View {
                         .font(.caption2)
                 }
                 .buttonStyle(.borderless)
+                .disabled(result.ocrText == nil)
             }
         }
     }

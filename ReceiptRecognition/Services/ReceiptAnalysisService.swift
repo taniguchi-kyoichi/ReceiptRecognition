@@ -55,7 +55,8 @@ actor ReceiptAnalysisService {
             outputTokens: result.usage.outputTokens,
             processingTime: Date().timeIntervalSince(startTime),
             ocrTime: nil,
-            ocrText: nil
+            ocrText: nil,
+            rectangleDetected: nil
         )
     }
 
@@ -63,13 +64,13 @@ actor ReceiptAnalysisService {
     func analyzeWithOCR(_ imageData: Data) async throws -> AnalysisResult {
         let startTime = Date()
 
-        // OCRでテキスト抽出（時間計測）
+        // OCRでテキスト抽出（矩形検出付き、時間計測）
         let ocrStartTime = Date()
-        let ocrText = try await OCRService.shared.recognizeTextAsString(from: imageData)
+        let ocrResult = try await OCRService.shared.recognizeTextWithRectangleDetection(from: imageData)
         let ocrTime = Date().timeIntervalSince(ocrStartTime)
 
-        // テキストが認識できなければレシートではないと判定
-        guard !ocrText.isEmpty else {
+        // 矩形が検出されなければレシートではないと判定
+        guard ocrResult.rectangleDetected else {
             return AnalysisResult(
                 method: .ocrText,
                 isReceipt: false,
@@ -78,11 +79,27 @@ actor ReceiptAnalysisService {
                 outputTokens: 0,
                 processingTime: Date().timeIntervalSince(startTime),
                 ocrTime: ocrTime,
-                ocrText: nil
+                ocrText: nil,
+                rectangleDetected: false
             )
         }
 
-        let input = LLMInput("以下がレシートか判定し、日付を抽出:\n\(ocrText)")
+        // テキストが認識できなければレシートではないと判定
+        guard !ocrResult.text.isEmpty else {
+            return AnalysisResult(
+                method: .ocrText,
+                isReceipt: false,
+                date: nil,
+                inputTokens: 0,
+                outputTokens: 0,
+                processingTime: Date().timeIntervalSince(startTime),
+                ocrTime: ocrTime,
+                ocrText: nil,
+                rectangleDetected: true
+            )
+        }
+
+        let input = LLMInput("以下がレシートか判定し、日付を抽出:\n\(ocrResult.text)")
 
         let result: GenerationResult<ReceiptAnalysisFromText> = try await client.generateWithUsage(
             input: input,
@@ -97,7 +114,8 @@ actor ReceiptAnalysisService {
             outputTokens: result.usage.outputTokens,
             processingTime: Date().timeIntervalSince(startTime),
             ocrTime: ocrTime,
-            ocrText: ocrText
+            ocrText: ocrResult.text,
+            rectangleDetected: true
         )
     }
 
