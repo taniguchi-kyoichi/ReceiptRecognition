@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		190045772F1F245800FC1BB0 /* LLMStructuredOutputs in Frameworks */ = {isa = PBXBuildFile; productRef = 190045762F1F245800FC1BB0 /* LLMStructuredOutputs */; };
 		190510BA2F1F062500924C0E /* DesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = 190510B92F1F062500924C0E /* DesignSystem */; };
 		190510BD2F1F064700924C0E /* LLMStructuredOutputs in Frameworks */ = {isa = PBXBuildFile; productRef = 190510BC2F1F064700924C0E /* LLMStructuredOutputs */; };
 /* End PBXBuildFile section */
@@ -30,6 +31,7 @@
 			files = (
 				190510BD2F1F064700924C0E /* LLMStructuredOutputs in Frameworks */,
 				190510BA2F1F062500924C0E /* DesignSystem in Frameworks */,
+				190045772F1F245800FC1BB0 /* LLMStructuredOutputs in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -74,6 +76,7 @@
 			packageProductDependencies = (
 				190510B92F1F062500924C0E /* DesignSystem */,
 				190510BC2F1F064700924C0E /* LLMStructuredOutputs */,
+				190045762F1F245800FC1BB0 /* LLMStructuredOutputs */,
 			);
 			productName = ReceiptRecognition;
 			productReference = 190510AA2F1F040600924C0E /* ReceiptRecognition.app */;
@@ -105,7 +108,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				190510B82F1F062500924C0E /* XCRemoteSwiftPackageReference "swift-design-system" */,
-				190510BB2F1F064700924C0E /* XCLocalSwiftPackageReference "../SwiftPackages/swift-llm-structured-outputs" */,
+				190045752F1F245800FC1BB0 /* XCRemoteSwiftPackageReference "swift-llm-structured-outputs" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 190510AB2F1F040600924C0E /* Products */;
@@ -354,14 +357,15 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		190510BB2F1F064700924C0E /* XCLocalSwiftPackageReference "../SwiftPackages/swift-llm-structured-outputs" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = "../SwiftPackages/swift-llm-structured-outputs";
-		};
-/* End XCLocalSwiftPackageReference section */
-
 /* Begin XCRemoteSwiftPackageReference section */
+		190045752F1F245800FC1BB0 /* XCRemoteSwiftPackageReference "swift-llm-structured-outputs" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/no-problem-dev/swift-llm-structured-outputs.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 		190510B82F1F062500924C0E /* XCRemoteSwiftPackageReference "swift-design-system" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/no-problem-dev/swift-design-system.git";
@@ -373,6 +377,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		190045762F1F245800FC1BB0 /* LLMStructuredOutputs */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 190045752F1F245800FC1BB0 /* XCRemoteSwiftPackageReference "swift-llm-structured-outputs" */;
+			productName = LLMStructuredOutputs;
+		};
 		190510B92F1F062500924C0E /* DesignSystem */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 190510B82F1F062500924C0E /* XCRemoteSwiftPackageReference "swift-design-system" */;
