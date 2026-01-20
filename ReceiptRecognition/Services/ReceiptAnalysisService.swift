@@ -44,7 +44,7 @@ actor ReceiptAnalysisService {
 
         let result: GenerationResult<ReceiptAnalysis> = try await client.generateWithUsage(
             input: input,
-            model: .flash25Lite
+            model: .flash20
         )
 
         return AnalysisResult(
@@ -103,7 +103,7 @@ actor ReceiptAnalysisService {
 
         let result: GenerationResult<ReceiptAnalysisFromText> = try await client.generateWithUsage(
             input: input,
-            model: .flash25Lite
+            model: .flash20
         )
 
         return AnalysisResult(
@@ -125,6 +125,30 @@ actor ReceiptAnalysisService {
         async let ocrResult = analyzeWithOCR(imageData)
 
         return try await (imageResult, ocrResult)
+    }
+
+    /// テキストのみで解析（スキャナー用：OCRは既に完了済み）
+    func analyzeText(_ ocrText: String) async throws -> AnalysisResult {
+        let startTime = Date()
+
+        let input = LLMInput("以下がレシートか判定し、日付を抽出:\n\(ocrText)")
+
+        let result: GenerationResult<ReceiptAnalysisFromText> = try await client.generateWithUsage(
+            input: input,
+            model: .flash20
+        )
+
+        return AnalysisResult(
+            method: .ocrText,
+            isReceipt: result.result.isReceipt,
+            date: result.result.date,
+            inputTokens: result.usage.inputTokens,
+            outputTokens: result.usage.outputTokens,
+            processingTime: Date().timeIntervalSince(startTime),
+            ocrTime: nil,
+            ocrText: ocrText,
+            rectangleDetected: true
+        )
     }
 }
 

@@ -20,6 +20,7 @@ struct ContentView: View {
     @State private var errorMessage: String?
     @State private var showOCRTextSheet = false
     @State private var showSettings = false
+    @State private var showScanner = false
 
     var body: some View {
         NavigationStack {
@@ -40,6 +41,13 @@ struct ContentView: View {
             }
             .navigationTitle("レシート認識")
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showScanner = true
+                    } label: {
+                        Image(systemName: "viewfinder")
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         showSettings = true
@@ -65,6 +73,9 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showSettings) {
                 SettingsView()
+            }
+            .fullScreenCover(isPresented: $showScanner) {
+                ReceiptScannerView()
             }
         }
     }
