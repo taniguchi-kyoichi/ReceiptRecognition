@@ -1,30 +1,23 @@
-//
-//  ReceiptScannerView.swift
-//  ReceiptRecognition
-//
-//  Created by Claude on 2026/01/20.
-//
-
 import SwiftUI
 import AVFoundation
-import Vision
 
 // MARK: - Receipt Scanner View
 
 /// リアルタイムレシートスキャナービュー
 struct ReceiptScannerView: View {
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var scanner = ReceiptScannerViewModel()
+    @Environment(\.cameraService) private var cameraService
+    @State private var scanner = ReceiptScannerViewModel()
 
     var body: some View {
         ZStack {
             // カメラプレビュー
-            CameraPreviewView(session: scanner.captureSession)
+            CameraPreviewView(session: cameraService.captureSession)
                 .ignoresSafeArea()
 
             // 矩形オーバーレイ
-            if let rect = scanner.detectedRectangle {
-                RectangleOverlayView(normalizedRect: rect, stability: scanner.stability)
+            if let corners = scanner.smoothedCorners {
+                RectangleOverlayView(corners: corners, stability: scanner.stability)
             }
 
             // UI オーバーレイ
@@ -51,20 +44,37 @@ struct ReceiptScannerView: View {
                     .padding(.vertical, 8)
                     .background(.black.opacity(0.6))
                     .clipShape(Capsule())
-                    .padding(.bottom, 50)
+
+                // シャッターボタン
+                Button {
+                    scanner.manualCapture()
+                } label: {
+                    Circle()
+                        .fill(.white)
+                        .frame(width: 72, height: 72)
+                        .overlay(
+                            Circle()
+                                .stroke(.white, lineWidth: 3)
+                                .frame(width: 82, height: 82)
+                        )
+                }
+                .disabled(scanner.capturedData != nil)
+                .padding(.bottom, 30)
             }
         }
         .onAppear {
-            scanner.startScanning()
+            scanner.startScanning(cameraService: cameraService)
         }
         .onDisappear {
             scanner.stopScanning()
         }
         .fullScreenCover(item: $scanner.capturedData) { data in
-            ReceiptAnalysisView(capturedImage: data.image, imageData: data.imageData)
-                .onDisappear {
-                    scanner.resetForNextScan()
-                }
+            SaveConfirmView(capturedImage: data.image, imageData: data.imageData) {
+                dismiss()
+            }
+            .onDisappear {
+                scanner.resetForNextScan()
+            }
         }
     }
 }
@@ -108,9 +118,9 @@ class CameraPreviewUIView: UIView {
 
 // MARK: - Rectangle Overlay View
 
-/// 検出された矩形のオーバーレイ
+/// 検出された矩形のオーバーレイ（RectangleCorners ベース）
 struct RectangleOverlayView: View {
-    let normalizedRect: VNRectangleObservation
+    let corners: RectangleCorners
     let stability: Double // 0.0 - 1.0
 
     var body: some View {
@@ -125,13 +135,13 @@ struct RectangleOverlayView: View {
 
             // 安定度インジケーター（角に表示）
             if stability > 0 && stability < 1.0 {
-                let corners = getCorners(in: geometry.size)
+                let cornerPoints = getCorners(in: geometry.size)
                 ForEach(0..<4, id: \.self) { index in
                     Circle()
                         .trim(from: 0, to: stability)
                         .stroke(Color.green, lineWidth: 3)
                         .frame(width: 20, height: 20)
-                        .position(corners[index])
+                        .position(cornerPoints[index])
                 }
             }
         }
@@ -141,20 +151,20 @@ struct RectangleOverlayView: View {
         Path { path in
             // Vision座標系（左下原点）からSwiftUI座標系（左上原点）に変換
             let topLeft = CGPoint(
-                x: normalizedRect.topLeft.x * size.width,
-                y: (1 - normalizedRect.topLeft.y) * size.height
+                x: corners.topLeft.x * size.width,
+                y: (1 - corners.topLeft.y) * size.height
             )
             let topRight = CGPoint(
-                x: normalizedRect.topRight.x * size.width,
-                y: (1 - normalizedRect.topRight.y) * size.height
+                x: corners.topRight.x * size.width,
+                y: (1 - corners.topRight.y) * size.height
             )
             let bottomRight = CGPoint(
-                x: normalizedRect.bottomRight.x * size.width,
-                y: (1 - normalizedRect.bottomRight.y) * size.height
+                x: corners.bottomRight.x * size.width,
+                y: (1 - corners.bottomRight.y) * size.height
             )
             let bottomLeft = CGPoint(
-                x: normalizedRect.bottomLeft.x * size.width,
-                y: (1 - normalizedRect.bottomLeft.y) * size.height
+                x: corners.bottomLeft.x * size.width,
+                y: (1 - corners.bottomLeft.y) * size.height
             )
 
             path.move(to: topLeft)
@@ -167,10 +177,10 @@ struct RectangleOverlayView: View {
 
     private func getCorners(in size: CGSize) -> [CGPoint] {
         [
-            CGPoint(x: normalizedRect.topLeft.x * size.width, y: (1 - normalizedRect.topLeft.y) * size.height),
-            CGPoint(x: normalizedRect.topRight.x * size.width, y: (1 - normalizedRect.topRight.y) * size.height),
-            CGPoint(x: normalizedRect.bottomRight.x * size.width, y: (1 - normalizedRect.bottomRight.y) * size.height),
-            CGPoint(x: normalizedRect.bottomLeft.x * size.width, y: (1 - normalizedRect.bottomLeft.y) * size.height)
+            CGPoint(x: corners.topLeft.x * size.width, y: (1 - corners.topLeft.y) * size.height),
+            CGPoint(x: corners.topRight.x * size.width, y: (1 - corners.topRight.y) * size.height),
+            CGPoint(x: corners.bottomRight.x * size.width, y: (1 - corners.bottomRight.y) * size.height),
+            CGPoint(x: corners.bottomLeft.x * size.width, y: (1 - corners.bottomLeft.y) * size.height)
         ]
     }
 }

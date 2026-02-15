@@ -1,0 +1,81 @@
+name: ReceiptRecognition
+options:
+  bundleIdPrefix: com.kyoichi
+  deploymentTarget:
+    iOS: "18.0"
+  xcodeVersion: "16.2"
+  generateEmptyDirectories: false
+
+packages:
+  DesignSystem:
+    url: https://github.com/no-problem-dev/swift-design-system.git
+    majorVersion: 1.0.0
+  LLMStructuredOutputs:
+    url: https://github.com/no-problem-dev/swift-llm-structured-outputs.git
+    majorVersion: 1.0.0
+
+schemes:
+  ReceiptRecognition:
+    build:
+      targets:
+        ReceiptRecognition: all
+    run:
+      config: Debug
+    archive:
+      config: Release
+
+targets:
+  ReceiptRecognition:
+    type: application
+    platform: iOS
+    sources:
+      - ReceiptRecognition
+    configFiles:
+      Debug: Secrets.xcconfig
+      Release: Secrets.xcconfig
+    info:
+      path: ReceiptRecognition/Info.plist
+      properties:
+        GeminiAPIKey: $(GEMINI_API_KEY)
+        NSCameraUsageDescription: "レシートを撮影するためにカメラへのアクセスが必要です"
+        NSPhotoLibraryUsageDescription: "保存されたレシート画像を選択するためにフォトライブラリへのアクセスが必要です"
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UIApplicationSupportsIndirectInputEvents: true
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
+        NSUbiquitousContainers:
+          iCloud.com.kyoichi.ReceiptRecognition:
+            NSUbiquitousContainerIsDocumentScopePublic: true
+            NSUbiquitousContainerSupportedFolderLevels: Any
+            NSUbiquitousContainerName: ReceiptRecognition
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.kyoichi.ReceiptRecognition
+        DEVELOPMENT_TEAM: Y8MG29W5VM
+        CODE_SIGN_STYLE: Automatic
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: 1
+        SWIFT_VERSION: "5.0"
+        SWIFT_STRICT_CONCURRENCY: complete
+        SWIFT_APPROACHABLE_CONCURRENCY: YES
+        SWIFT_DEFAULT_ACTOR_ISOLATION: nonisolated
+        SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY: YES
+        CODE_SIGN_ENTITLEMENTS: ReceiptRecognition/ReceiptRecognition.entitlements
+    dependencies:
+      - package: DesignSystem
+      - package: LLMStructuredOutputs
+    attributes:
+      SystemCapabilities:
+        com.apple.iCloud:
+          enabled: true
